@@ -1,0 +1,20 @@
+<div class="container">
+    <form method="post" action="">
+        {% csrf_token %}
+        {% for hidden in form.hidden_fields %}
+            {{ hidden }}
+        {% endfor %}
+        {% for field in form.visible_fields %}
+        <div class="form-row">
+            <div class="form-group col-8">
+                {{ field.errors }}
+                {{ field.label_tag }} {{ field }}
+                {% if field.help_text %}
+                <small class="form-text text-muted">{{ field.help_text|safe }}</small>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+        <input type="submit" class="btn btn-primary" value="提交" />
+    </form>
+</div>

@@ -1,0 +1,19 @@
+{% extends "common/base.html" %}
+{% block title %}大厅{% endblock %}
+{% block main %}
+<div class="jumbotron">
+    <h1 class="display-4">桌上角色扮演游戏</h1>
+    <p class="lead">桌上角色扮演游戏（Tabletop Role Playing Game，缩写： TRPG）是一种最初的角色扮演游戏。龙与地下城的出现使它曾经流行过。属于广义的桌上游戏的一种。桌上角色扮演游戏一般需要3－5人参与，其中一人为游戏主持者（Game Master，简称GM），在《龙与地下城》等战棋TRPG中称为地下城主，在《黑暗世界》等扮演向TRPG中称为“故事叙述者”（Storyteller，简称ST），在泛用系统（GURPS）等TRPG中则称为游戏主持人，负责解说剧情，扮演非玩家角色，如村民、怪物等，记录时间，对玩家的行为作出裁决等。其他的人则是玩家，扮演游戏中的角色。进行游戏的过程被称为“跑团”。</p>
+    <hr class="my-4">
+    {% if user.id %}
+    <form class="form-inline" method="post" action="">
+        {% csrf_token %}
+        <label class="sr-only" for="{{ form.room_name.id_for_label }}">{{ form.room_name.label }}</label>
+        {{ form.room_name }}
+        <input type="submit" class="btn btn-primary mb-2" value="进入房间" />
+    </form>
+    {% else %}
+    <p>请先注册或登录</p>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,163 @@
+{% extends "common/base.html" %}
+{% load static %}
+{% block title %}房间 {{ room.name }}{% endblock %}
+{% block header_extra %}
+<link rel="stylesheet" href="{% static 'css/room.css' %}">
+<link rel="stylesheet" href="{% static 'css/jquery-ui.min.css' %}">
+{% endblock %}
+{% block main %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-lg-5 py-md-3">
+            {% if characters %}
+            <p>点击查看你制作的角色卡，或<a class="btn btn-outline-success ml-2" href="{% url 'character_import' room.name %}">点此创建角色</a></p>
+            <div class="row">
+                <div class="col-3">
+                    <div class="nav flex-column nav-pills" id="characters-tab" role="tablist" aria-orientation="vertical">
+                        {% for character in characters %}
+                        <a class="nav-link{% if forloop.first %} active{% endif %}" id="character-tab-{{ character.id }}" data-toggle="pill" href="#character-{{ character.id }}" role="tab" aria-controls="character-{{ character.id }}" aria-selected="{% if forloop.first %}true{% else %}false{% endif %}">{{ character.name }}</a>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="col-9">
+                    <div class="tab-content" id="characters-tabContent">
+                        {% for character in characters %}
+                        <div class="tab-pane fade{% if forloop.first %} show active{% endif %}" id="character-{{ character.id }}" role="tabpanel" aria-labelledby="character-tab-{{ character.id }}">
+                            {% if character.char_type != "admin" %}
+                            <!--basic info-->
+                            <h5 class="text-info">基本信息</h5>
+                            <div class="row mb-3">
+                                <div class="col-3">
+                                    Avatar
+                                </div>
+                                <div class="col-9"><div class="row">
+                                    {% with info=character.details.basic_info %}
+                                    {% for info_key, info_val in info.items %}
+                                    <div class="col-6 mb-1 char-prop">
+                                        <small><span class="font-weight-bold mr-sm-2 char-prop-key">{{ info_key }}</span>
+                                        <span class="char-prop-val">{{ info_val.value }}</span></small>
+                                        {% if info_val.editable %}
+                                        <input type="text" class="form-control form-control-sm float-right char-prop-mark" />
+                                        {% endif %}
+                                    </div>
+                                    {% endfor %}
+                                    {% endwith %}
+                                </div></div>
+                            </div>
+                            <!--numeric info-->
+                            <h5 class="text-info">数值信息</h5>
+                            <div class="row mb-3 sortable">
+                                {% with info=character.details.num_info %}
+                                {% for info_key, info_val in info.items %}
+                                <div class="col-4 mb-1 char-prop">
+                                    <small><span class="font-weight-bold mr-sm-2 char-prop-key">{{ info_key }}</span>
+                                    <span class="char-prop-val">{{ info_val.value }}</span></small>
+                                    {% if info_val.editable %}
+                                    <input type="text" class="form-control form-control-sm float-right char-prop-mark" />
+                                    {% endif %}
+                                </div>
+                                {% endfor %}
+                                {% endwith %}
+                            </div>
+                            <!--skills info-->
+                            <h5 class="text-info">技能</h5>
+                            <div class="row mb-3 sortable">
+                                {% with info=character.details.skills %}
+                                {% for info_key, info_val in info.items %}
+                                <div class="col-4 mb-1 char-prop">
+                                    <small><span class="font-weight-bold mr-sm-2 char-prop-key">{{ info_key }}</span>
+                                    <span class="char-prop-val">{{ info_val.value }}</span></small>
+                                    {% if info_val.editable %}
+                                    <input type="text" class="form-control form-control-sm float-right char-prop-mark" />
+                                    {% endif %}
+                                </div>
+                                {% endfor %}
+                                {% endwith %}
+                            </div>
+                            <!--background-->
+                            <h5 class="text-info">人物背景</h5>
+                            <div class="row mb-3">
+                                <div class="col">
+                                    <small>{{ character.details.background|linebreaks }}</small>
+                                </div>
+                            </div>
+                            <!--luggage-->
+                            <h5 class="text-info">携带物品</h5>
+                            <div class="row mb-3">
+                                <div class="col">
+                                    <small>{{ character.details.luggage|linebreaks }}</small>
+                                </div>
+                            </div>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <p>你尚未创建角色<a class="btn btn-outline-success ml-md-1" href="{% url 'character_import' room.name %}">点此创建角色</a></p>
+            {% endif %}
+        </div>
+        <div class="border-left col-lg-7 py-md-3">
+            <div class="msg-wrap" id="msg-wrap"></div>
+
+            {% if characters %}
+            <form class="send-wrap" id="msg-form" action="{% url 'send_msg' room.name %}">
+                <div class="row">
+                    <div class="col-11">
+                    <textarea class="form-control send-message" id="msg-box" rows="2" placeholder="请文明发言" required></textarea>
+                    </div>
+                    <div class="col-1">
+                        <input class="btn btn-primary" type="submit" value="发送" />
+                    </div>
+                </div>
+            </form>
+            <div class="roll-panel">
+                <form class="form-inline mb-3" id="roll-form" action="{% url 'roll' room.name %}">
+                    <label class="mr-sm-2" for="roll-cmd">我要掷骰</label>
+                    <input type="text" class="form-control mr-sm-2" id="roll-cmd" placeholder="骰子指令" value="1d100">
+
+                    <label class="mr-sm-2" for="roll-against">检定</label>
+                    <input type="text" class="form-control mr-sm-2" id="roll-against" placeholder="检定说明">
+
+                    <input type="submit" class="btn btn-primary mr-sm-2" value="掷骰">
+                    {% if is_admin %}
+                    <button type="button" class="btn btn-dark mr-sm-2" id="roll-form-roll-hidden">暗投</button>
+                    <button type="button" class="btn btn-secondary mr-sm-2" id="roll-form-roll-req">要求掷骰(TODO)</button>
+                    {% endif %}
+                    或快捷掷骰(TODO)：
+                </form>
+                <a class="btn btn-outline-secondary" data-toggle="tooltip" data-placement="bottom"
+                   title="对当前选择角色进行1d100侦查检定">侦查</a>
+                <a class="btn btn-outline-secondary" data-toggle="tooltip" data-placement="bottom"
+                   title="对当前选择角色进行1d100急救检定">急救</a>
+                <a class="btn btn-outline-secondary" data-toggle="tooltip" data-placement="bottom"
+                   title="对当前选择角色进行1d100灵感检定">灵感</a>
+                <a class="btn btn-outline-secondary" data-toggle="tooltip" data-placement="bottom"
+                   title="对当前选择角色进行1d100理智检定">SanCheck</a>
+                {% if is_admin %}
+                <a class="btn btn-outline-secondary" data-toggle="tooltip" data-placement="bottom"
+                   title="对当前选择角色进行1d100心理学检定(由KP进行暗投)">心理学</a>
+                {% endif %}
+            </div>
+            <div class="modify-panel">
+                数值修改区(TODO)
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+</div>
+{% endblock %}
+{% block extra_script %}
+<script>
+    var TrpgEnv = {
+        'pull_url': '{% url 'pull_msg' room_name=room.name %}',
+        'room_id': {{ room.id }},
+        'room_name': "{{ room.name }}",
+        'last_record_id': null
+    };
+</script>
+<script src="{% static 'js/room.js' %}"></script>
+<script src="{% static 'js/jquery-ui.min.js' %}"></script>
+{% endblock %}

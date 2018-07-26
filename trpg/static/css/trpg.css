@@ -1,0 +1,13 @@
+#footer {
+    text-align:center;
+    font-size:12px;
+    line-height:16px;
+}
+
+span.time-nowrap {
+    white-space:nowrap;
+}
+
+table.itemlist {
+    font-size:13px;
+}
