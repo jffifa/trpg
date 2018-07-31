@@ -231,6 +231,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
     $('#msg-form').submit(function (e) {
         let form = $(this);
         let msg = form.find('#msg-box').val();
+        form.find('#msg-box').val('');
         let curCharName = window.TrpgEnv['cur_char_name'];
 
         if (curCharName) {
