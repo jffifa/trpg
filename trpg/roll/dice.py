@@ -205,7 +205,9 @@ class Coc6eDice(Dice):
                     for grp in ['basic_info', 'num_info', 'skills']:
                         if grp in details:
                             for k, v in details[grp].items():
-                                if comment in k and type(v['value']) is int:
+                                if 'checkable' in v and v['checkable'] and \
+                                        comment in k and \
+                                        type(v['value']) is int:
                                     value = v['value']
                                     value_str = str(value)
 
