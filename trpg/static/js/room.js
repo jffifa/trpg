@@ -228,68 +228,91 @@ document.addEventListener("DOMContentLoaded", function(event) {
     });
     */
 
-    $('#msg-form').submit(function (e) {
-        let form = $(this);
-        let msg = form.find('#msg-box').val();
-        form.find('#msg-box').val('');
-        let curCharName = window.TrpgEnv['cur_char_name'];
+    // msg-form
+    {
+        window.TrpgEnv['msg_submit_key'] = $('#msg-form input.msg-submit-choice:checked').val();
+        $('#msg-form input.msg-submit-choice').change(function (e) {
+            window.TrpgEnv['msg_submit_key'] = this.value;
+        });
 
-        if (curCharName) {
-            let url = form.attr('action');
-            form.find('.btn').attr('disabled', 'disabled');
-            $.ajax({
-                type: 'POST',
-                url: url,
-                data: {
-                    'msg': msg,
-                    'cur_char_name': curCharName
-                },
-                timeout: 2000
-            }).done(function(data) {
-                form.find('.btn').removeAttr('disabled');
-            }).fail(function(jqXHR, textStatus, errorThrown){
-                form.find('.btn').removeAttr('disabled');
-                // TODO: some fail log
-            });
-        }
-        e.preventDefault();
-    });
+        $('#msg-box').keydown(function (e) {
+            if (e.keyCode == 13) {
+                if (window.TrpgEnv['msg_submit_key']!=='ctrlenter' || e.ctrlKey) {
+                    $('#msg-form').trigger('submit');
+                    e.preventDefault();
+                }
+            }
+        });
 
-    let submitRollForm = function(form, rollHidden=false) {
-        let rollCmd = form.find('#roll-cmd').val();
-        let rollAgainst = form.find('#roll-against').val();
-        let curCharName = window.TrpgEnv['cur_char_name'];
+        $('#msg-form').submit(function (e) {
+            e.preventDefault();
+            if (!this.checkValidity()) {
+                return;
+            }
+            
+            let form = $(this);
+            let msg = form.find('#msg-box').val();
+            form.find('#msg-box').val('');
+            let curCharName = window.TrpgEnv['cur_char_name'];
 
-        if (curCharName) {
-            let url = form.attr('action');
-            form.find('.btn').attr('disabled', 'disabled');
-            $.ajax({
-                type: 'POST',
-                url: url,
-                data: {
-                    'roll_cmd': rollCmd,
-                    'roll_against': rollAgainst,
-                    'cur_char_name': curCharName,
-                    'roll_hidden': rollHidden
-                },
-                timeout: 2000
-            }).done(function(data) {
-                form.find('.btn').removeAttr('disabled');
-            }).fail(function(jqXHR, textStatus, errorThrown){
-                form.find('.btn').removeAttr('disabled');
-                // TODO: some fail log
-            });
-        }
-    };
+            if (curCharName) {
+                let url = form.attr('action');
+                form.find('.btn').attr('disabled', 'disabled');
+                $.ajax({
+                    type: 'POST',
+                    url: url,
+                    data: {
+                        'msg': msg,
+                        'cur_char_name': curCharName
+                    },
+                    timeout: 2000
+                }).done(function(data) {
+                    form.find('.btn').removeAttr('disabled');
+                }).fail(function(jqXHR, textStatus, errorThrown){
+                    form.find('.btn').removeAttr('disabled');
+                    // TODO: some fail log
+                });
+            }
+        });
+    }
 
-    $('#roll-form').submit(function (e) {
-        let form = $(this);
-        submitRollForm(form);
-        e.preventDefault();
-    });
-    $('#roll-form-roll-hidden').click(function (e) {
-        let form = $('#roll-form');
-        submitRollForm(form, true);
-    })
+    {
+        let submitRollForm = function(form, rollHidden=false) {
+            let rollCmd = form.find('#roll-cmd').val();
+            let rollAgainst = form.find('#roll-against').val();
+            let curCharName = window.TrpgEnv['cur_char_name'];
+
+            if (curCharName) {
+                let url = form.attr('action');
+                form.find('.btn').attr('disabled', 'disabled');
+                $.ajax({
+                    type: 'POST',
+                    url: url,
+                    data: {
+                        'roll_cmd': rollCmd,
+                        'roll_against': rollAgainst,
+                        'cur_char_name': curCharName,
+                        'roll_hidden': rollHidden
+                    },
+                    timeout: 2000
+                }).done(function(data) {
+                    form.find('.btn').removeAttr('disabled');
+                }).fail(function(jqXHR, textStatus, errorThrown){
+                    form.find('.btn').removeAttr('disabled');
+                    // TODO: some fail log
+                });
+            }
+        };
+
+        $('#roll-form').submit(function (e) {
+            let form = $(this);
+            submitRollForm(form);
+            e.preventDefault();
+        });
+        $('#roll-form-roll-hidden').click(function (e) {
+            let form = $('#roll-form');
+            submitRollForm(form, true);
+        })
+    }
     
 });

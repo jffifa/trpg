@@ -13,10 +13,15 @@
             <p>点击查看你制作的角色卡，或<a class="btn btn-outline-success ml-2" href="{% url 'character_import' room.name %}">点此创建角色</a></p>
             <div class="row">
                 <div class="col-3">
-                    <div class="nav flex-column nav-pills" id="characters-tab" role="tablist" aria-orientation="vertical">
+                    <div class="nav flex-column nav-pills mb-lg-3" id="characters-tab" role="tablist" aria-orientation="vertical">
                         {% for character in characters %}
                         <a class="nav-link{% if forloop.first %} active{% endif %}" id="character-tab-{{ character.id }}" data-toggle="pill" href="#character-{{ character.id }}" role="tab" aria-controls="character-{{ character.id }}" aria-selected="{% if forloop.first %}true{% else %}false{% endif %}">{{ character.name }}</a>
                         {% endfor %}
+                    </div>
+                    <div class="row">
+                        <div class="col">
+                            <a class="btn btn-outline-info" href="#">导出记录(TODO)</a>
+                        </div>
                     </div>
                 </div>
                 <div class="col-9">
@@ -104,11 +109,19 @@
             {% if characters %}
             <form class="send-wrap" id="msg-form" action="{% url 'send_msg' room.name %}">
                 <div class="row">
-                    <div class="col-11">
-                    <textarea class="form-control send-message" id="msg-box" rows="2" placeholder="请文明发言" required></textarea>
+                    <div class="col-10">
+                    <textarea class="form-control send-message" id="msg-box" rows="3" placeholder="请文明发言" required></textarea>
                     </div>
-                    <div class="col-1">
-                        <input class="btn btn-primary" type="submit" value="发送" />
+                    <div class="col-2">
+                        <input class="btn btn-primary col" type="submit" value="发送" />
+                        <div class="form-check">
+                            <input class="form-check-input msg-submit-choice" type="radio" id="msg-submit-choice-ctrlenter" name="msg-submit-choice" value="ctrlenter" checked />
+                            <label for="msg-submit-choice-ctrlenter">CTRL+ENTER</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input msg-submit-choice" type="radio" id="msg-submit-choice-enter" name="msg-submit-choice" value="enter"/>
+                            <label for="msg-submit-choice-enter">ENTER</label>
+                        </div>
                     </div>
                 </div>
             </form>
