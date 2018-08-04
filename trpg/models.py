@@ -83,8 +83,8 @@ class Record(models.Model):
     character = models.ForeignKey(Character, on_delete=models.CASCADE, null=True)
     record_type = models.CharField(max_length=32, choices=RECORD_TYPE_CHOICES, verbose_name='记录类型')
     record_time = models.DateTimeField(auto_now_add=True)
-    details = JSONCharField(max_length=1024, verbose_name='记录细节')
-    pure_text = models.CharField(max_length=1024, verbose_name='纯文本')
+    details = JSONField(max_length=65536, verbose_name='记录细节')
+    pure_text = models.TextField(max_length=65536, verbose_name='纯文本')
 
     @classmethod
     def create_roll_record(
