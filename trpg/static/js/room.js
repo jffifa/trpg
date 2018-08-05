@@ -43,6 +43,31 @@ document.addEventListener("DOMContentLoaded", function(event) {
         });
     }
 
+    // side panel
+    {
+        $('input#silent-mode-switch').change(function (e) {
+            var checkbox = $(this);
+            var checked = checkbox.prop('checked');
+            var data = {
+                'mode_name':'silent',
+                'mode_value': checked?1:0
+            };
+            $.ajax({
+                type: 'POST',
+                url: window.TrpgEnv['mode_change_url'],
+                data: data,
+                timeout: 1000
+            }).done(function(data, textStatus, jqXHR){
+                if (data['succ'] !== true) {
+                    checkbox.prop('checked', !checked);
+                }
+            }).fail(function(jqXHR, textStatus, errorThrown){
+                // do some fail log
+                checkbox.prop('checked', !checked);
+            });
+        });
+    }
+
     /* records staff */
     {
         let roomName = window.TrpgEnv['room_name'];
@@ -144,14 +169,44 @@ document.addEventListener("DOMContentLoaded", function(event) {
         let genMsgContainter = function(msgPara, char) {
             let msgBody = $('<div>').addClass('media-body');
             let msgChar = $('<h6>').addClass('media-heading').text(char['char_name']);
-            if (char['char_type']==='pc') {
-                msgChar.addClass('text-primary');
-            } else if (char['char_type']==='admin') {
-                msgChar.addClass('text-secondary');
+            if (char['char_type']==='admin') {
+                msgChar.addClass('text-danger');
+            } else if (char['char_type']==='pc') {
+                var is_self = window.TrpgEnv['characters'].some(function (e) {
+                   return char['char_id']===e['char_id'] && e['control_by_user'];
+                });
+                if (is_self) {
+                    msgChar.addClass('text-success');
+                } else {
+                    msgChar.addClass('text-primary');
+                }
             }
             msgBody.append(msgChar);
             msgBody.append(msgPara);
-            let msgContainer = $('<div>').addClass('media msg').data('charId', char['char_id']);
+            let msgContainer = $('<div>').addClass('media msg msg-normal').data('charId', char['char_id']);
+            msgContainer.append(msgBody);
+            return msgContainer;
+        };
+        
+        let processSysMsg = function (record) {
+            const MODE_FLAG_SILENT = 0x1;
+            let details = record['details'];
+
+            switch (details['type']) {
+                case 'mode_change':
+                    let silent = details['mode_flag'] & MODE_FLAG_SILENT;
+                    if (silent && !window.TrpgEnv['is_admin']) {
+                        $('#msg-form input[type="submit"]').prop('disabled', true);
+                    } else {
+                        $('#msg-form input[type="submit"]').prop('disabled', false);
+                    }
+                    break;
+            }
+        };
+        
+        let genSysMsgContainer = function(record) {
+            let msgBody = $('<strong>').text(record['pure_text']);
+            let msgContainer = $('<div>').addClass('alert alert-info msg msg-sys');
             msgContainer.append(msgBody);
             return msgContainer;
         };
@@ -169,14 +224,21 @@ document.addEventListener("DOMContentLoaded", function(event) {
                 let prevMsgContainer = $('#msg-wrap>.msg:last');
                 data['records'].forEach(function(record) {
                     window.TrpgEnv['last_record_id'] = record['record_id'];
-                    let msg = genMsg(record);
-                    if (record['char']['char_id'] === prevMsgContainer.data('charId')) {
-                        prevMsgContainer.children('.media-body').append(msg);
-                    } else {
-                        let msgContainer = genMsgContainter(msg, record['char']);
+                    if (record['record_type'] === 'sys') {
+                        processSysMsg(record);
+                        let msgContainer = genSysMsgContainer(record);
                         msgWrap.append(msgContainer);
                         prevMsgContainer = msgContainer;
-                    }
+                    } else {
+                        let msg = genMsg(record);
+                        if (record['char']['char_id'] === prevMsgContainer.data('charId')) {
+                            prevMsgContainer.children('.media-body').append(msg);
+                        } else {
+                            let msgContainer = genMsgContainter(msg, record['char']);
+                            msgWrap.append(msgContainer);
+                            prevMsgContainer = msgContainer;
+                        }
+                    } 
                 });
                 if (data['records'].length>0 && prevMsgContainer.length>0) {
                     prevMsgContainer[0].scrollIntoView(false);
@@ -194,6 +256,12 @@ document.addEventListener("DOMContentLoaded", function(event) {
             });
         };
         process();
+
+        // clear button
+        $('#msg-clear').click(function (e) {
+            let msgs = $('#msg-wrap>.msg');
+            msgs.remove();
+        })
     }
 
     /* roll panel staff */
@@ -230,8 +298,8 @@ document.addEventListener("DOMContentLoaded", function(event) {
 
     // msg-form
     {
-        window.TrpgEnv['msg_submit_key'] = $('#msg-form input.msg-submit-choice:checked').val();
-        $('#msg-form input.msg-submit-choice').change(function (e) {
+        window.TrpgEnv['msg_submit_key'] = $('#msg-form select.msg-submit-choice').val();
+        $('#msg-form select.msg-submit-choice').change(function (e) {
             window.TrpgEnv['msg_submit_key'] = this.value;
         });
 
@@ -257,7 +325,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
 
             if (curCharName) {
                 let url = form.attr('action');
-                form.find('.btn').attr('disabled', 'disabled');
+                form.find('.btn').prop('disabled', true);
                 $.ajax({
                     type: 'POST',
                     url: url,
@@ -267,9 +335,9 @@ document.addEventListener("DOMContentLoaded", function(event) {
                     },
                     timeout: 2000
                 }).done(function(data) {
-                    form.find('.btn').removeAttr('disabled');
+                    form.find('.btn').prop('disabled', false);
                 }).fail(function(jqXHR, textStatus, errorThrown){
-                    form.find('.btn').removeAttr('disabled');
+                    form.find('.btn').prop('disabled', false);
                     // TODO: some fail log
                 });
             }
@@ -284,7 +352,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
 
             if (curCharName) {
                 let url = form.attr('action');
-                form.find('.btn').attr('disabled', 'disabled');
+                form.find('.btn').prop('disabled', true);
                 $.ajax({
                     type: 'POST',
                     url: url,
@@ -296,9 +364,9 @@ document.addEventListener("DOMContentLoaded", function(event) {
                     },
                     timeout: 2000
                 }).done(function(data) {
-                    form.find('.btn').removeAttr('disabled');
+                    form.find('.btn').prop('disabled', false);
                 }).fail(function(jqXHR, textStatus, errorThrown){
-                    form.find('.btn').removeAttr('disabled');
+                    form.find('.btn').prop('disabled', false);
                     // TODO: some fail log
                 });
             }

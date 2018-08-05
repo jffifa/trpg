@@ -18,11 +18,24 @@
                         <a class="nav-link{% if forloop.first %} active{% endif %}" id="character-tab-{{ character.id }}" data-toggle="pill" href="#character-{{ character.id }}" role="tab" aria-controls="character-{{ character.id }}" aria-selected="{% if forloop.first %}true{% else %}false{% endif %}">{{ character.name }}</a>
                         {% endfor %}
                     </div>
-                    <div class="row">
+                    <div class="row mb-lg-3">
                         <div class="col">
-                            <a class="btn btn-outline-info" href="#">导出记录(TODO)</a>
+                            <a class="btn btn-outline-info side-button" href="#">导出记录(TODO)</a>
                         </div>
                     </div>
+                    {% if is_admin %}
+                    <div class="row">
+                        <div class="col">
+                            <div class="onoffswitch side-button">
+                                <input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox" id="silent-mode-switch"{% if room_mode.silent is True %} checked{% endif %}>
+                                <label class="onoffswitch-label" for="silent-mode-switch">
+                                    <span class="onoffswitch-inner"></span>
+                                    <span class="onoffswitch-switch"></span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
                 </div>
                 <div class="col-9">
                     <div class="tab-content" id="characters-tabContent">
@@ -113,14 +126,20 @@
                     <textarea class="form-control send-message" id="msg-box" rows="3" placeholder="请文明发言" required></textarea>
                     </div>
                     <div class="col-2">
-                        <input class="btn btn-primary col" type="submit" value="发送" />
-                        <div class="form-check">
-                            <input class="form-check-input msg-submit-choice" type="radio" id="msg-submit-choice-ctrlenter" name="msg-submit-choice" value="ctrlenter" checked />
-                            <label for="msg-submit-choice-ctrlenter">CTRL+ENTER</label>
+                        <div class="row mb-sm-3">
+                            <div class="col">
+                                <input class="btn btn-primary" type="submit" value="发送"
+                                       {% if room_mode.silent is True and not is_admin %}disabled{% endif %}/>
+                                <button class="btn btn-danger" id="msg-clear" type="button">清屏</button>
+                            </div>
                         </div>
-                        <div class="form-check">
-                            <input class="form-check-input msg-submit-choice" type="radio" id="msg-submit-choice-enter" name="msg-submit-choice" value="enter"/>
-                            <label for="msg-submit-choice-enter">ENTER</label>
+                        <div class="row">
+                            <div class="col">
+                                <select class="custom-select custom-select-sm msg-submit-choice">
+                                    <option value="ctrlenter" selected>CTRL+ENTER</option>
+                                    <option value="enter">ENTER</option>
+                                </select>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -136,7 +155,7 @@
                     <input type="submit" class="btn btn-primary mr-sm-2" value="掷骰">
                     {% if is_admin %}
                     <button type="button" class="btn btn-dark mr-sm-2" id="roll-form-roll-hidden">暗投</button>
-                    <button type="button" class="btn btn-secondary mr-sm-2" id="roll-form-roll-req">要求掷骰(TODO)</button>
+                    <!--<button type="button" class="btn btn-secondary mr-sm-2" id="roll-form-roll-req">要求掷骰(TODO)</button>-->
                     {% endif %}
                     或快捷掷骰(TODO)：
                 </form>
@@ -166,8 +185,17 @@
 <script>
     var TrpgEnv = {
         'pull_url': '{% url 'pull_msg' room_name=room.name %}',
+        'mode_change_url': '{% url 'room_mode_change' room_name=room.name %}',
         'room_id': {{ room.id }},
         'room_name': "{{ room.name }}",
+        'is_admin': {% if is_admin %}true{% else %}false{% endif %},
+        'characters': [
+            {% for char in characters %}{% if not forloop.first %},{% endif %}{
+                'char_id': {{ char.id }},
+                'char_name': '{{ char.name }}',
+                'control_by_user': {% if char.control_by_user is True %}true{% else %}false{% endif %}
+            }{% endfor %}
+        ],
         'last_record_id': null
     };
 </script>

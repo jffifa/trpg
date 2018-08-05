@@ -8,15 +8,20 @@ input.char-prop-mark {
     width: 26px;
     font-size: .8rem;
 }
-
-.message-wrap {
-    box-shadow: 0 0 3px #ddd;
-    padding:0;
+.media-heading {
+    font-weight: bold;
 }
-.msg {
+.msg-normal {
     padding:5px;
-    /*border-bottom:1px solid #ddd;*/
     margin:0;
+}
+.msg-sys {
+    background: none;
+    text-align: center;
+    color:#aaa;
+    border:none;
+    box-shadow: none;
+    border-bottom: 1px solid #ddd;
 }
 .msg-wrap {
     padding:0 10px;
@@ -24,7 +29,6 @@ input.char-prop-mark {
     overflow: auto;
     border-bottom: 1px solid #eee;
 }
-
 .time {
     color:#bfbfbf;
 }
@@ -54,24 +58,8 @@ input.char-prop-mark {
     padding:10px;
 }
 
-/*
-.msg-wrap .media-heading {
-    color:#003bb3;
-    font-weight: 700;
-}
-*/
-
 .msg-wrap .media-text {
     font-size: 80%;
-}
-
-.msg-date {
-    background: none;
-    text-align: center;
-    color:#aaa;
-    border:none;
-    box-shadow: none;
-    border-bottom: 1px solid #ddd;
 }
 
 /* Let's get this party started */
@@ -108,4 +96,53 @@ input.char-prop-mark {
 .record-roll span.roll-against-value,
 .record-roll span.roll-result-desc {
     margin-left: 0;
+}
+.sidebutton {
+    max-width: 150px;
+}
+.onoffswitch {
+    position: relative;
+    -webkit-user-select:none; -moz-user-select:none; -ms-user-select: none;
+}
+.onoffswitch-checkbox {
+    display: none;
+}
+.onoffswitch-label {
+    display: block; overflow: hidden; cursor: pointer;
+    border: 2px solid #6C757D; border-radius: 1.5rem;
+}
+.onoffswitch-inner {
+    display: block; width: 200%; margin-left: -100%;
+    transition: margin 0.25s ease-in 0s;
+}
+.onoffswitch-inner:before, .onoffswitch-inner:after {
+    display: block; float: left; width: 50%; height: 2.25; padding: 0; line-height: 2.25;
+    font-size: 1rem; color: white; font-family: Trebuchet, Arial, sans-serif; font-weight: bold;
+    box-sizing: border-box;
+}
+.onoffswitch-inner:before {
+    content: "叙述模式";
+    padding-left: 16px;
+    background-color: #DC3545; color: #FFFFFF;
+}
+.onoffswitch-inner:after {
+    content: "正常发言";
+    padding-right: 16px;
+    background-color: #EEEEEE; color: #6C757D;
+    text-align: right;
+}
+.onoffswitch-switch {
+    box-sizing: content-box;
+    display: block; width: 1.125rem; margin: 0.5625rem;
+    background: #FFFFFF;
+    position: absolute; top: 0; bottom: 0;
+    right: calc(100% - 40px);
+    border: 2px solid #6C757D; border-radius: 1.5rem;
+    transition: all 0.25s ease-in 0s;
+}
+.onoffswitch-checkbox:checked + .onoffswitch-label .onoffswitch-inner {
+    margin-left: 0;
+}
+.onoffswitch-checkbox:checked + .onoffswitch-label .onoffswitch-switch {
+    right: 0px;
 }

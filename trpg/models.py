@@ -1,5 +1,6 @@
 from django.db import models
 from jsonfield import JSONCharField, JSONField
+from enum import IntFlag
 
 from django.contrib.auth.models import User
 
@@ -12,6 +13,9 @@ class Room(models.Model):
         verbose_name = '房间'
         verbose_name_plural = '房间'
 
+    class ModeFlag(IntFlag):
+        SILENT = 0x1
+
     def __str__(self):
         return self.name
 
@@ -22,13 +26,7 @@ class Room(models.Model):
     name = models.CharField(max_length=32, unique=True, verbose_name='房间名')
     room_type = models.CharField(max_length=32, choices=ROOM_TYPE_CHOICES, verbose_name='房间类型')
     admin = models.ForeignKey(User, on_delete=models.CASCADE)
-
-    @classmethod
-    def check_user_admin(cls, room_name, user):
-        if cls.objects.filter(name=room_name, admin=user).exists():
-            return True
-        else:
-            return False
+    mode_flag = models.IntegerField(default=0)
 
     def get_dice_type(self):
         if self.room_type == 'coc6e':
@@ -58,6 +56,11 @@ class Character(models.Model):
     char_type = models.CharField(max_length=64, choices=CHAR_TYPE_CHOICES, verbose_name='角色类型')
     details = JSONField(verbose_name='角色细节')
     user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='关联账号')
+
+    @classmethod
+    def get_room_admin_character(cls, room):
+        # typically, there should be only one admin in a room
+        return cls.objects.get(room=room, char_type='admin')
 
 
 class Record(models.Model):
@@ -112,17 +115,22 @@ class Record(models.Model):
             'record_id': self.id,
             'room_id': self.room.id,
             'record_type': self.record_type,
-            'char': {
-                'char_id': self.character.id,
-                'char_type': self.character.char_type,
-                'char_name': self.character.name,
-            },
         }
         if self.record_type == 'talk':
             result['details'] = self.details
+            result['char'] = {
+                'char_id': self.character.id,
+                'char_type': self.character.char_type,
+                'char_name': self.character.name,
+            }
         elif self.record_type == 'roll':
             result['details'] = {
                 'roll_hidden': self.details['roll_hidden'],
+            }
+            result['char'] = {
+                'char_id': self.character.id,
+                'char_type': self.character.char_type,
+                'char_name': self.character.name,
             }
             d = result['details']
             if self.details['roll_hidden'] and user != self.room.admin:
@@ -135,5 +143,14 @@ class Record(models.Model):
                 dice_type = self.room.get_dice_type()
                 d['roll_result_text'] = dice_type.show_result(self.details['roll_result'])
                 d['roll_result_desc'] = self.details['roll_result_desc']
+        elif self.record_type == 'sys':
+            result['details'] = self.details
+            result['pure_text'] = self.pure_text
+            if self.character:
+                result['char'] = {
+                    'char_id': self.character.id,
+                    'char_type': self.character.char_type,
+                    'char_name': self.character.name,
+                }
 
         return result

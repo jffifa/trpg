@@ -26,11 +26,18 @@ class RoomView(TemplateView):
             characters = Character.objects.filter(room=room, user=self.request.user)
 
         for character in characters:
+            if character.user == self.request.user:
+                character.control_by_user = True
+            else:
+                character.control_by_user = False
             if character.char_type != 'admin':
                 character.details = self.process_character_detail(character.details)
         return {
             'is_admin': is_admin,
             'room': room,
+            'room_mode': {
+                'silent': bool(room.mode_flag & Room.ModeFlag.SILENT),
+            },
             'characters': characters,
         }
 
@@ -53,10 +60,11 @@ class PullRecordsView(JSONView):
         last_record_id = self.request.GET.get(
             'last_record_id', self.request.POST.get('last_record_id'))
 
-        records = Record.objects.order_by('id').filter(room=room)
+        records = Record.objects.order_by('-id').filter(room=room)
         if last_record_id != '':
             records = records.filter(pk__gt=int(last_record_id))
-        records = records[:self.MAX_PULL_COUNT]
+        records = list(records[:self.MAX_PULL_COUNT])
+        records.reverse()
         return {
             'records': records,
         }
@@ -71,6 +79,7 @@ class PullRecordsView(JSONView):
         }
 
 
+@method_decorator(login_required, name='dispatch')
 class SendMsgView(JSONView):
     http_method_names = ['post']
 
@@ -84,6 +93,11 @@ class SendMsgView(JSONView):
         # TODO: permission check
         room = Room.objects.get(name=room_name)
         char = Character.objects.get(room=room, name=char_name)
+
+        if room.mode_flag & Room.ModeFlag.SILENT:
+            if char.char_type != 'admin':
+                return {'succ': False, 'msg': 'room under silent mode'}
+
         record_detail = {'message': msg}
         Record.objects.create(
             room=room,
@@ -95,6 +109,51 @@ class SendMsgView(JSONView):
         return {'succ': True}
 
 
+@method_decorator(login_required, name='dispatch')
+class RoomModeMsgView(JSONView):
+    http_method_names = ['post']
+
+    def get_context_data(self, **kwargs):
+        mode_name = self.request.POST.get('mode_name')
+        mode_value = self.request.POST.get('mode_value')
+        if not mode_name or not mode_value:
+            return {'succ': False, 'msg': 'invalid params'}
+        room = Room.objects.get(name=kwargs.get('room_name'))
+        if room.admin != self.request.user:
+            return {'succ': False, 'msg': 'permission error'}
+        char = Character.get_room_admin_character(room=room)
+
+        mode_value = (mode_value == '1')
+        if mode_name == 'silent':
+            mode_flag = Room.ModeFlag.SILENT
+            if mode_value:
+                pure_text = '%s 开启了叙述模式，请聆听' % char.name
+            else:
+                pure_text = '%s 关闭了叙述模式，所有人正常发言' % char.name
+        else:
+            return {'succ': False, 'msg': 'unknown mode name'}
+
+        if mode_value:
+            room.mode_flag |= mode_flag
+        else:
+            room.mode_flag &= (~mode_flag)
+        room.save()
+
+        details = {
+            'type': 'mode_change',
+            'mode_flag': room.mode_flag,
+        }
+        Record.objects.create(
+            room=room,
+            character=char,
+            record_type='sys',
+            details=details,
+            pure_text=pure_text
+        )
+        return {'succ': True}
+
+
+@method_decorator(login_required, name='dispatch')
 class RollView(JSONView):
     http_method_names = ['post']
 

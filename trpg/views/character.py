@@ -12,7 +12,9 @@ class ImportCharacterView(FormView):
     form_class = ImportCharacterFormPlayer
 
     def get_form_class(self):
-        if Room.check_user_admin(room_name=self.kwargs['room_name'], user=self.request.user):
+        if Room.objects.filter(
+                name=self.kwargs['room_name'],
+                admin=self.request.user).exists():
             return ImportCharacterForm
         else:
             return ImportCharacterFormPlayer
