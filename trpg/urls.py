@@ -18,6 +18,7 @@ urlpatterns = [
     url(r'^logout/$',
         views.LogoutView.as_view(),
         name='logout'),
+
     # rooms
     url(r'^room/(?P<room_name>\w+)/character_import/$',
         views.ImportCharacterView.as_view(),
@@ -37,6 +38,8 @@ urlpatterns = [
     url(r'^room/(?P<room_name>\w+)/roll/$',
         views.RollView.as_view(),
         name='roll'),
+
+    # room_export
 
     # site
     url(r'^$',

@@ -39,7 +39,7 @@ input.char-prop-mark {
     /*background: #f8f8f8;*/
 }
 .send-message {
-    resize: none;
+    resize: vertical;
 }
 
 .highlight {
