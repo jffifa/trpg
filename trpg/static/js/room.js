@@ -197,8 +197,10 @@ document.addEventListener("DOMContentLoaded", function(event) {
                     let silent = details['mode_flag'] & MODE_FLAG_SILENT;
                     if (silent && !window.TrpgEnv['is_admin']) {
                         $('#msg-form input[type="submit"]').prop('disabled', true);
+                        $('#roll-form input[type="submit"]').prop('disabled', true);
                     } else {
                         $('#msg-form input[type="submit"]').prop('disabled', false);
+                        $('#roll-form input[type="submit"]').prop('disabled', false);
                     }
                     break;
             }

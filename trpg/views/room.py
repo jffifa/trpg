@@ -176,6 +176,8 @@ class RollView(JSONView):
             char = Character.objects.get(room=room, char_type='admin')
         else:
             char = Character.objects.get(room=room, name=char_name)
+        if (room.mode_flag & Room.ModeFlag.SILENT) and char.char_type != 'admin':
+            return {'succ': False, 'msg': 'room under silent mode'}
 
         def get_char_details(char_name):
             try:

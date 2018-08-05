@@ -152,7 +152,8 @@
                     <label class="mr-sm-2" for="roll-against">检定</label>
                     <input type="text" class="form-control mr-sm-2" id="roll-against" placeholder="检定说明">
 
-                    <input type="submit" class="btn btn-primary mr-sm-2" value="掷骰">
+                    <input type="submit" class="btn btn-primary mr-sm-2" value="掷骰"
+                           {% if room_mode.silent is True and not is_admin %}disabled{% endif %}>
                     {% if is_admin %}
                     <button type="button" class="btn btn-dark mr-sm-2" id="roll-form-roll-hidden">暗投</button>
                     <!--<button type="button" class="btn btn-secondary mr-sm-2" id="roll-form-roll-req">要求掷骰(TODO)</button>-->
