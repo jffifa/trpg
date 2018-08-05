@@ -122,6 +122,18 @@
             {% if characters %}
             <form class="send-wrap" id="msg-form" action="{% url 'send_msg' room.name %}">
                 <div class="row">
+                    <div class="col">
+                        <div class="mb-lg-2">
+                            <button class="btn btn-outline-primary dropdown-toggle" type="button" data-toggle="collapse" data-target="#send-to" aria-expanded="false" aria-controls="send-to">交谈对象</button>
+                        </div>
+                        <div class="collapse mb-lg-2" id="send-to">
+                            <div class="card card-body">
+                                Anim pariatur cliche reprehenderit, enim eiusmod high life accusamus terry richardson ad squid. Nihil anim keffiyeh helvetica, craft beer labore wes anderson cred nesciunt sapiente ea proident.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
                     <div class="col-10">
                     <textarea class="form-control send-message" id="msg-box" rows="3" placeholder="请文明发言" required></textarea>
                     </div>
@@ -145,7 +157,7 @@
                 </div>
             </form>
             <div class="roll-panel">
-                <form class="form-inline mb-3" id="roll-form" action="{% url 'roll' room.name %}">
+                <form class="form-inline mb-lg-3" id="roll-form" action="{% url 'roll' room.name %}">
                     <label class="mr-sm-2" for="roll-cmd">我要掷骰</label>
                     <input type="text" class="form-control mr-sm-2" id="roll-cmd" placeholder="骰子指令" value="1d100">
 
