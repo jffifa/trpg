@@ -176,6 +176,20 @@ class Coc6eDice(Dice):
         self.get_char_details = get_char_details
         super(Coc6eDice, self).__init__()
 
+    @classmethod
+    def get_value_from_details(cls, details, comment):
+        for grp in ['basic_info', 'num_info', 'skills']:
+            if grp in details:
+                for k, v in details[grp].items():
+                    if v.get('checkable', False) and \
+                            comment in k and \
+                            type(v['value']) is int:
+                        value = v['value']
+                        value_str = str(value)
+                        return k, value, value_str
+
+        return comment, None, None
+
     def parse_roll_against(self, roll_against, *args, **kwargs):
         roll_against = roll_against.strip()
         char_name = kwargs.get('char_name')
@@ -202,14 +216,7 @@ class Coc6eDice(Dice):
             if value is None:  # try get value from character details
                 details = self.get_char_details(char_name)
                 if details:
-                    for grp in ['basic_info', 'num_info', 'skills']:
-                        if grp in details:
-                            for k, v in details[grp].items():
-                                if 'checkable' in v and v['checkable'] and \
-                                        comment in k and \
-                                        type(v['value']) is int:
-                                    value = v['value']
-                                    value_str = str(value)
+                    comment, value, value_str = self.get_value_from_details(details, comment)
 
         return {
             'char_name': char_name if value is not None else None,

@@ -9,16 +9,29 @@
 <div class="container-fluid">
     <div class="row">
         <div class="col-lg-5 py-md-3">
-            {% if characters %}
-            <p>点击查看你制作的角色卡，或<a class="btn btn-outline-success ml-2" href="{% url 'character_import' room.name %}">点此创建角色</a></p>
             <div class="row">
                 <div class="col-3">
-                    <div class="nav flex-column nav-pills mb-lg-3" id="characters-tab" role="tablist" aria-orientation="vertical">
+                    <div class="nav flex-column nav-pills mb-3" id="characters-tab" role="tablist" aria-orientation="vertical">
                         {% for character in characters %}
-                        <a class="nav-link{% if forloop.first %} active{% endif %}" id="character-tab-{{ character.id }}" data-toggle="pill" href="#character-{{ character.id }}" role="tab" aria-controls="character-{{ character.id }}" aria-selected="{% if forloop.first %}true{% else %}false{% endif %}">{{ character.name }}</a>
+                        {% if is_admin or character.control_by_user is True %}
+                        <a class="nav-link{% if first_controlable_char_id == character.id %} active{% endif %}"
+                           id="character-tab-{{ character.id }}"
+                           data-character-id="{{ character.id }}" data-character-name="{{ character.name }}"
+                           data-toggle="pill" href="#character-{{ character.id }}"
+                           role="tab" aria-controls="character-{{ character.id }}"
+                           aria-selected="{% if first_controlable_char_id == character.id %}true{% else %}false{% endif %}">{{ character.name }}</a>
+                        {% endif %}
                         {% endfor %}
                     </div>
-                    <div class="row mb-lg-3">
+                    <div class="row mb-2">
+                        <div class="col">
+                            {% if first_controlable_char_id is None %}
+                            <p>你尚未创建角色</p>
+                            {% endif %}
+                            <a class="btn btn-outline-success side-button" href="{% url 'character_import' room.name %}">点此创建角色</a>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
                         <div class="col">
                             <a class="btn btn-outline-info side-button" href="#">导出记录(TODO)</a>
                         </div>
@@ -53,7 +66,7 @@
                                     {% for info_key, info_val in info.items %}
                                     <div class="col-6 mb-1 char-prop">
                                         <small><span class="font-weight-bold mr-sm-2 char-prop-key">{{ info_key }}</span>
-                                        <span class="char-prop-val">{{ info_val.value }}</span></small>
+                                            <span class="char-prop-val">{{ info_val.value }}</span></small>
                                         {% if info_val.editable %}
                                         <input type="text" class="form-control form-control-sm float-right char-prop-mark" />
                                         {% endif %}
@@ -69,7 +82,7 @@
                                 {% for info_key, info_val in info.items %}
                                 <div class="col-4 mb-1 char-prop">
                                     <small><span class="font-weight-bold mr-sm-2 char-prop-key">{{ info_key }}</span>
-                                    <span class="char-prop-val">{{ info_val.value }}</span></small>
+                                        <span class="char-prop-val">{{ info_val.value }}</span></small>
                                     {% if info_val.editable %}
                                     <input type="text" class="form-control form-control-sm float-right char-prop-mark" />
                                     {% endif %}
@@ -84,7 +97,7 @@
                                 {% for info_key, info_val in info.items %}
                                 <div class="col-4 mb-1 char-prop">
                                     <small><span class="font-weight-bold mr-sm-2 char-prop-key">{{ info_key }}</span>
-                                    <span class="char-prop-val">{{ info_val.value }}</span></small>
+                                        <span class="char-prop-val">{{ info_val.value }}</span></small>
                                     {% if info_val.editable %}
                                     <input type="text" class="form-control form-control-sm float-right char-prop-mark" />
                                     {% endif %}
@@ -112,9 +125,6 @@
                     </div>
                 </div>
             </div>
-            {% else %}
-            <p>你尚未创建角色<a class="btn btn-outline-success ml-md-1" href="{% url 'character_import' room.name %}">点此创建角色</a></p>
-            {% endif %}
         </div>
         <div class="border-left col-lg-7 py-md-3">
             <div class="msg-wrap" id="msg-wrap"></div>
@@ -123,10 +133,10 @@
             <form class="send-wrap" id="msg-form" action="{% url 'send_msg' room.name %}">
                 <div class="row">
                     <div class="col">
-                        <div class="mb-lg-2">
+                        <div class="mb-2">
                             <button class="btn btn-outline-primary dropdown-toggle" type="button" data-toggle="collapse" data-target="#send-to" aria-expanded="false" aria-controls="send-to">交谈对象</button>
                         </div>
-                        <div class="collapse mb-lg-2" id="send-to">
+                        <div class="collapse mb-2" id="send-to">
                             <div class="card card-body">
                                 Anim pariatur cliche reprehenderit, enim eiusmod high life accusamus terry richardson ad squid. Nihil anim keffiyeh helvetica, craft beer labore wes anderson cred nesciunt sapiente ea proident.
                             </div>
@@ -138,7 +148,7 @@
                     <textarea class="form-control send-message" id="msg-box" rows="3" placeholder="请文明发言" required></textarea>
                     </div>
                     <div class="col-2">
-                        <div class="row mb-sm-3">
+                        <div class="row mb-3">
                             <div class="col">
                                 <input class="btn btn-primary" type="submit" value="发送"
                                        {% if room_mode.silent is True and not is_admin %}disabled{% endif %}/>
@@ -157,7 +167,7 @@
                 </div>
             </form>
             <div class="roll-panel">
-                <form class="form-inline mb-lg-3" id="roll-form" action="{% url 'roll' room.name %}">
+                <form class="form-inline mb-3" id="roll-form" action="{% url 'roll' room.name %}">
                     <label class="mr-sm-2" for="roll-cmd">我要掷骰</label>
                     <input type="text" class="form-control mr-sm-2" id="roll-cmd" placeholder="骰子指令" value="1d100">
 
@@ -191,7 +201,6 @@
             {% endif %}
         </div>
     </div>
-
 </div>
 {% endblock %}
 {% block extra_script %}

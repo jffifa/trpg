@@ -37,9 +37,11 @@ document.addEventListener("DOMContentLoaded", function(event) {
 
     // current character name
     {
-        window.TrpgEnv['cur_char_name'] = $('#characters-tab>.active[data-toggle="pill"]').text();
+        window.TrpgEnv['cur_char_id'] = $('#characters-tab>.active[data-toggle="pill"]').data('characterId');
+        window.TrpgEnv['cur_char_name'] = $('#characters-tab>.active[data-toggle="pill"]').data('characterName');
         $('#characters-tab>[data-toggle="pill"]').on('shown.bs.tab', function (e) {
-            window.TrpgEnv['cur_char_name'] = $(e.target).text();
+            window.TrpgEnv['cur_char_id'] = $(e.target).data('characterId');
+            window.TrpgEnv['cur_char_name'] = $(e.target).data('characterName');
         });
     }
 
@@ -168,7 +170,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
 
         let genMsgContainter = function(msgPara, char) {
             let msgBody = $('<div>').addClass('media-body');
-            let msgChar = $('<h6>').addClass('media-heading').text(char['char_name']);
+            let msgChar = $('<h6>').addClass('msg-heading').text(char['char_name']);
             if (char['char_type']==='admin') {
                 msgChar.addClass('text-danger');
             } else if (char['char_type']==='pc') {
@@ -323,6 +325,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
             let form = $(this);
             let msg = form.find('#msg-box').val();
             form.find('#msg-box').val('');
+            let curCharId = window.TrpgEnv['cur_char_id'];
             let curCharName = window.TrpgEnv['cur_char_name'];
 
             if (curCharName) {
@@ -333,6 +336,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
                     url: url,
                     data: {
                         'msg': msg,
+                        'cur_char_id': curCharId,
                         'cur_char_name': curCharName
                     },
                     timeout: 2000
@@ -350,6 +354,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
         let submitRollForm = function(form, rollHidden=false) {
             let rollCmd = form.find('#roll-cmd').val();
             let rollAgainst = form.find('#roll-against').val();
+            let curCharId = window.TrpgEnv['cur_char_id'];
             let curCharName = window.TrpgEnv['cur_char_name'];
 
             if (curCharName) {
@@ -361,6 +366,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
                     data: {
                         'roll_cmd': rollCmd,
                         'roll_against': rollAgainst,
+                        'cur_char_id': curCharId,
                         'cur_char_name': curCharName,
                         'roll_hidden': rollHidden
                     },

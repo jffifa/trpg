@@ -19,19 +19,21 @@ class RoomView(TemplateView):
         room = Room.objects.get(name=room_name)
 
         is_admin = False
+        characters = Character.objects.filter(room=room)
         if room.admin == self.request.user:
             is_admin = True
-            characters = Character.objects.filter(room=room)
-        else:
-            characters = Character.objects.filter(room=room, user=self.request.user)
 
+        first_controlable_char_id = None
         for character in characters:
             if character.user == self.request.user:
                 character.control_by_user = True
+                if first_controlable_char_id is None:
+                    first_controlable_char_id = character.id
             else:
                 character.control_by_user = False
             if character.char_type != 'admin':
                 character.details = self.process_character_detail(character.details)
+
         return {
             'is_admin': is_admin,
             'room': room,
@@ -39,6 +41,7 @@ class RoomView(TemplateView):
                 'silent': bool(room.mode_flag & Room.ModeFlag.SILENT),
             },
             'characters': characters,
+            'first_controlable_char_id': first_controlable_char_id,
         }
 
     @classmethod
@@ -87,12 +90,12 @@ class SendMsgView(JSONView):
         msg = self.request.POST.get('msg')
         if not msg:
             return {'succ': True}
-        char_name = self.request.POST.get('cur_char_name')
+        char_id = int(self.request.POST.get('cur_char_id'))
         room_name = kwargs.get('room_name')
 
         # TODO: permission check
         room = Room.objects.get(name=room_name)
-        char = Character.objects.get(room=room, name=char_name)
+        char = Character.objects.get(room=room, id=char_id)
 
         if room.mode_flag & Room.ModeFlag.SILENT:
             if char.char_type != 'admin':
@@ -161,7 +164,7 @@ class RollView(JSONView):
         roll_cmd = self.request.POST.get('roll_cmd', '')
         roll_against = self.request.POST.get('roll_against', '')
         roll_hidden = self.request.POST.get('roll_hidden', '')
-        char_name = self.request.POST.get('cur_char_name')
+        char_id = self.request.POST.get('cur_char_id')
         room_name = kwargs.get('room_name')
 
         if roll_hidden == 'true':
@@ -175,7 +178,7 @@ class RollView(JSONView):
             # force character to admin
             char = Character.objects.get(room=room, char_type='admin')
         else:
-            char = Character.objects.get(room=room, name=char_name)
+            char = Character.objects.get(room=room, id=char_id)
         if (room.mode_flag & Room.ModeFlag.SILENT) and char.char_type != 'admin':
             return {'succ': False, 'msg': 'room under silent mode'}
 
@@ -190,7 +193,7 @@ class RollView(JSONView):
                 return None
 
         dice = Coc6eDice(get_char_details=get_char_details)
-        dice.roll(roll_cmd=roll_cmd, roll_against=roll_against, char_name=char_name)
+        dice.roll(roll_cmd=roll_cmd, roll_against=roll_against, char_name=char.name)
         Record.create_roll_record(
             room=room, character=char,
             raw_roll_cmd=roll_cmd, raw_roll_against=roll_against,
