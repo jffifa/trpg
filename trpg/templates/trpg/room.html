@@ -4,6 +4,7 @@
 {% block header_extra %}
 <link rel="stylesheet" href="{% static 'css/room.css' %}">
 <link rel="stylesheet" href="{% static 'css/jquery-ui.min.css' %}">
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.2.0/css/all.css" integrity="sha384-hWVjflwFxL6sNzntih27bfxkr27PmbbK/iSvJ+a4+0owXq79v+lsFkW54bOGbiDQ" crossorigin="anonymous">
 {% endblock %}
 {% block main %}
 <div class="container-fluid">
@@ -134,11 +135,24 @@
                 <div class="row">
                     <div class="col">
                         <div class="mb-2">
-                            <button class="btn btn-outline-primary dropdown-toggle" type="button" data-toggle="collapse" data-target="#send-to" aria-expanded="false" aria-controls="send-to">交谈对象</button>
+                            <button class="btn btn-outline-info dropdown-toggle" type="button" data-toggle="collapse" data-target="#send-to" aria-expanded="false" aria-controls="send-to">交谈对象</button>
                         </div>
                         <div class="collapse mb-2" id="send-to">
-                            <div class="card card-body">
-                                Anim pariatur cliche reprehenderit, enim eiusmod high life accusamus terry richardson ad squid. Nihil anim keffiyeh helvetica, craft beer labore wes anderson cred nesciunt sapiente ea proident.
+                            <div class="row">
+                                <div class="col">
+                                    <span class="button-checkbox" id="send-to-toggle-all">
+                                        <button type="button" class="btn" data-color="secondary" aria-pressed="true" data-state="on"><i class="far fa-check-square"></i></button>
+                                        <input type="checkbox" class="hidden" checked />
+                                    </span>
+                                    {% for character in characters %}
+                                    {% if not character.control_by_user %}
+                                    <span class="button-checkbox send-to-toggle-list">
+                                        <button type="button" class="btn" data-color="secondary" aria-pressed="false">{{ character.name }}</button>
+                                        <input type="checkbox" class="hidden" checked />
+                                    </span>
+                                    {% endif %}
+                                    {% endfor %}
+                                </div>
                             </div>
                         </div>
                     </div>

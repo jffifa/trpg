@@ -58,6 +58,10 @@ input.char-prop-mark {
     padding:10px;
 }
 
+.hidden {
+    display: none!important;
+    visibility: hidden!important;
+}
 .msg-wrap .media-text {
     font-size: 80%;
 }

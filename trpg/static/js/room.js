@@ -198,11 +198,11 @@ document.addEventListener("DOMContentLoaded", function(event) {
                 case 'mode_change':
                     let silent = details['mode_flag'] & MODE_FLAG_SILENT;
                     if (silent && !window.TrpgEnv['is_admin']) {
-                        $('#msg-form input[type="submit"]').prop('disabled', true);
-                        $('#roll-form input[type="submit"]').prop('disabled', true);
+                        $('#msg-form input:submit').prop('disabled', true);
+                        $('#roll-form input:submit').prop('disabled', true);
                     } else {
-                        $('#msg-form input[type="submit"]').prop('disabled', false);
-                        $('#roll-form input[type="submit"]').prop('disabled', false);
+                        $('#msg-form input:submit').prop('disabled', false);
+                        $('#roll-form input:submit').prop('disabled', false);
                     }
                     break;
             }
@@ -299,6 +299,61 @@ document.addEventListener("DOMContentLoaded", function(event) {
         $(this).toggleClass('text-info')
     });
     */
+    // msg-form panel
+    {
+        $('#send-to .button-checkbox').each(function () {
+            // Settings
+            var $widget = $(this),
+                $button = $widget.find('button'),
+                $checkbox = $widget.find('input:checkbox'),
+                color = $button.data('color');
+
+            // Event Handlers
+            $button.on('click', function () {
+                $checkbox.prop('checked', !$checkbox.is(':checked'));
+                $checkbox.triggerHandler('change');
+                updateDisplay();
+            });
+            $checkbox.on('change', function () {
+                updateDisplay();
+            });
+
+            // Actions
+            function updateDisplay() {
+                var isChecked = $checkbox.is(':checked');
+
+                // Update the button's color
+                if (isChecked) {
+                    $button.removeClass('btn-default').addClass(`btn-${color}`)
+                        .addClass('active').prop('aria-pressed', 'true');
+                } else {
+                    $button.removeClass('active').removeClass(`btn-${color}`)
+                        .addClass('btn-default').prop('aria-pressed', 'false');
+                }
+            }
+
+            // Initialization
+            updateDisplay();
+        });
+        //for toggle-all
+        {
+            var $widget = $('#send-to-toggle-all'),
+                $button = $widget.find('button');
+            $button.click(function () {
+                var $self = $(this);
+                var state = $self.data('state');
+                if (state === 'on') {
+                    $self.data('state', 'off');
+                    $self.find('i').removeClass().addClass('far fa-square');
+                    $('#send-to .button-checkbox input:checkbox').prop('checked', false).trigger('change');
+                } else {
+                    $self.data('state', 'on');
+                    $self.find('i').removeClass().addClass('far fa-check-square');
+                    $('#send-to .button-checkbox input:checkbox').prop('checked', true).trigger('change');
+                }
+            });
+        }
+    }
 
     // msg-form
     {
