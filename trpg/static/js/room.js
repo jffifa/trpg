@@ -70,7 +70,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
         });
     }
 
-    /* records staff */
+    // records staff
     {
         let roomName = window.TrpgEnv['room_name'];
         let pullUrl = window.TrpgEnv['pull_url'];
@@ -154,6 +154,14 @@ document.addEventListener("DOMContentLoaded", function(event) {
                     result = $('<p>').addClass('col media-text record-msg');
                     result.data('msgId', record['record_id']);
                     result.text(record['details']['message']);
+                    if ('send_to_char_ids' in record['details']) {
+                        let sendToSpan = $('<span>').addClass('text-secondary mr-1');
+                        let send_to_str = '(私下对 ';
+                        send_to_str += record['details']['send_to_char_names'].join(', ');
+                        send_to_str += ' 说)';
+                        sendToSpan.text(send_to_str);
+                        result.prepend(sendToSpan);
+                    }
                     // get raw html and replace line breaks
                     let rawHtml = result.html();
                     rawHtml = rawHtml.replace(/(\r?\n)+/, '<br>');
@@ -234,6 +242,16 @@ document.addEventListener("DOMContentLoaded", function(event) {
                         msgWrap.append(msgContainer);
                         prevMsgContainer = msgContainer;
                     } else {
+                        // check if record should show
+                        if (record['record_type'] === 'talk' && 'send_to_char_ids' in record['details']) {
+                            var show = window.TrpgEnv['characters'].some(function(e){
+                                return e['control_by_user'] && (
+                                    record['char']['char_id']===e['char_id'] ||
+                                    record['details']['send_to_char_ids'].indexOf(e['char_id'])>=0);
+                            });
+                            if (!show) return;
+                        }
+
                         let msg = genMsg(record);
                         if (record['char']['char_id'] === prevMsgContainer.data('charId')) {
                             prevMsgContainer.children('.media-body').append(msg);
@@ -268,7 +286,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
         })
     }
 
-    /* roll panel staff */
+    // roll panel staff
     // auto fill roll panel
     {
         $('.sortable').sortable({
@@ -291,14 +309,6 @@ document.addEventListener("DOMContentLoaded", function(event) {
         });
     }
 
-    /*
-    $('.char-prop').focus(function (e) {
-        $(this).toggleClass('text-info')
-    });
-    $('.char-prop').mouseup(function (e) {
-        $(this).toggleClass('text-info')
-    });
-    */
     // msg-form panel
     {
         $('#send-to .button-checkbox').each(function () {
@@ -310,7 +320,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
 
             // Event Handlers
             $button.on('click', function () {
-                $checkbox.prop('checked', !$checkbox.is(':checked'));
+                $checkbox.prop('checked', !$checkbox.prop('checked'));
                 $checkbox.triggerHandler('change');
                 updateDisplay();
             });
@@ -320,7 +330,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
 
             // Actions
             function updateDisplay() {
-                var isChecked = $checkbox.is(':checked');
+                var isChecked = $checkbox.prop('checked');
 
                 // Update the button's color
                 if (isChecked) {
@@ -345,11 +355,11 @@ document.addEventListener("DOMContentLoaded", function(event) {
                 if (state === 'on') {
                     $self.data('state', 'off');
                     $self.find('i').removeClass().addClass('far fa-square');
-                    $('#send-to .button-checkbox input:checkbox').prop('checked', false).trigger('change');
+                    $('#send-to .button-checkbox.send-to-toggle-list input:checkbox').prop('checked', false).trigger('change');
                 } else {
                     $self.data('state', 'on');
                     $self.find('i').removeClass().addClass('far fa-check-square');
-                    $('#send-to .button-checkbox input:checkbox').prop('checked', true).trigger('change');
+                    $('#send-to .button-checkbox.send-to-toggle-list input:checkbox').prop('checked', true).trigger('change');
                 }
             });
         }
@@ -379,23 +389,41 @@ document.addEventListener("DOMContentLoaded", function(event) {
             
             let form = $(this);
             let msg = form.find('#msg-box').val();
-            form.find('#msg-box').val('');
             let curCharId = window.TrpgEnv['cur_char_id'];
             let curCharName = window.TrpgEnv['cur_char_name'];
+            let data = {
+                'msg': msg,
+                'cur_char_id': curCharId,
+                'cur_char_name': curCharName
+            };
+            
+            //check send-to
+            var sendToCharIds = [];
+            var sendToAll = true;
+            $('#send-to .send-to-toggle-list').each(function(){
+                var self = $(this);
+                var checkbox = self.find('input:checkbox');
+                if (checkbox.prop('checked')) {
+                    sendToCharIds.push(self.data('characterId'));
+                } else {
+                    sendToAll = false;
+                }
+            });
+            if (sendToCharIds.length === 0) return;
+            if (!sendToAll) {
+                data['send_to_char_ids'] = sendToCharIds;
+            }
 
-            if (curCharName) {
+            if (curCharId) {
                 let url = form.attr('action');
                 form.find('.btn').prop('disabled', true);
                 $.ajax({
                     type: 'POST',
                     url: url,
-                    data: {
-                        'msg': msg,
-                        'cur_char_id': curCharId,
-                        'cur_char_name': curCharName
-                    },
+                    data: data,
                     timeout: 2000
                 }).done(function(data) {
+                    form.find('#msg-box').val('');
                     form.find('.btn').prop('disabled', false);
                 }).fail(function(jqXHR, textStatus, errorThrown){
                     form.find('.btn').prop('disabled', false);
@@ -405,6 +433,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
         });
     }
 
+    // roll-form
     {
         let submitRollForm = function(form, rollHidden=false) {
             let rollCmd = form.find('#roll-cmd').val();

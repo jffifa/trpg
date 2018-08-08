@@ -23,12 +23,11 @@ class RoomView(TemplateView):
         if room.admin == self.request.user:
             is_admin = True
 
-        first_controlable_char_id = None
+        controlable_char_ids = []
         for character in characters:
             if character.user == self.request.user:
                 character.control_by_user = True
-                if first_controlable_char_id is None:
-                    first_controlable_char_id = character.id
+                controlable_char_ids.append(character.id)
             else:
                 character.control_by_user = False
             if character.char_type != 'admin':
@@ -41,7 +40,7 @@ class RoomView(TemplateView):
                 'silent': bool(room.mode_flag & Room.ModeFlag.SILENT),
             },
             'characters': characters,
-            'first_controlable_char_id': first_controlable_char_id,
+            'controlable_char_ids': controlable_char_ids,
         }
 
     @classmethod
@@ -91,6 +90,8 @@ class SendMsgView(JSONView):
         if not msg:
             return {'succ': True}
         char_id = int(self.request.POST.get('cur_char_id'))
+        send_to = self.request.POST.getlist('send_to_char_ids[]')
+        send_to = list(map(int, send_to))
         room_name = kwargs.get('room_name')
 
         # TODO: permission check
@@ -102,6 +103,8 @@ class SendMsgView(JSONView):
                 return {'succ': False, 'msg': 'room under silent mode'}
 
         record_detail = {'message': msg}
+        if send_to:
+            record_detail['send_to_char_ids'] = send_to
         Record.objects.create(
             room=room,
             character=char,

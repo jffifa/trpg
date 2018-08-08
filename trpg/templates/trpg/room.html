@@ -15,18 +15,18 @@
                     <div class="nav flex-column nav-pills mb-3" id="characters-tab" role="tablist" aria-orientation="vertical">
                         {% for character in characters %}
                         {% if is_admin or character.control_by_user is True %}
-                        <a class="nav-link{% if first_controlable_char_id == character.id %} active{% endif %}"
+                        <a class="nav-link{% if controlable_char_ids|first == character.id %} active{% endif %}"
                            id="character-tab-{{ character.id }}"
                            data-character-id="{{ character.id }}" data-character-name="{{ character.name }}"
                            data-toggle="pill" href="#character-{{ character.id }}"
                            role="tab" aria-controls="character-{{ character.id }}"
-                           aria-selected="{% if first_controlable_char_id == character.id %}true{% else %}false{% endif %}">{{ character.name }}</a>
+                           aria-selected="{% if controlable_char_ids|first == character.id %}true{% else %}false{% endif %}">{{ character.name }}</a>
                         {% endif %}
                         {% endfor %}
                     </div>
                     <div class="row mb-2">
                         <div class="col">
-                            {% if first_controlable_char_id is None %}
+                            {% if not controlable_char_ids %}
                             <p>你尚未创建角色</p>
                             {% endif %}
                             <a class="btn btn-outline-success side-button" href="{% url 'character_import' room.name %}">点此创建角色</a>
@@ -146,7 +146,7 @@
                                     </span>
                                     {% for character in characters %}
                                     {% if not character.control_by_user %}
-                                    <span class="button-checkbox send-to-toggle-list">
+                                    <span class="button-checkbox send-to-toggle-list" data-character-id="{{ character.id }}">
                                         <button type="button" class="btn" data-color="secondary" aria-pressed="false">{{ character.name }}</button>
                                         <input type="checkbox" class="hidden" checked />
                                     </span>

@@ -118,6 +118,12 @@ class Record(models.Model):
         }
         if self.record_type == 'talk':
             result['details'] = self.details
+            if 'send_to_char_ids' in self.details:
+                send_to_char_names = list(Character.objects.filter(
+                    id__in=self.details['send_to_char_ids']).values_list(
+                    'name', flat=True))
+                result['details']['send_to_char_names'] = send_to_char_names
+
             result['char'] = {
                 'char_id': self.character.id,
                 'char_type': self.character.char_type,
