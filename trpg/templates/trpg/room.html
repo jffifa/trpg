@@ -54,7 +54,8 @@
                 <div class="col-9">
                     <div class="tab-content" id="characters-tabContent">
                         {% for character in characters %}
-                        <div class="tab-pane fade{% if forloop.first %} show active{% endif %}" id="character-{{ character.id }}" role="tabpanel" aria-labelledby="character-tab-{{ character.id }}">
+                        {% if is_admin or character.control_by_user is True %}
+                        <div class="tab-pane fade{% if controlable_char_ids|first == character.id %} show active{% endif %}" id="character-{{ character.id }}" role="tabpanel" aria-labelledby="character-tab-{{ character.id }}">
                             {% if character.char_type != "admin" %}
                             <!--basic info-->
                             <h5 class="text-info">基本信息</h5>
@@ -122,6 +123,7 @@
                             </div>
                             {% endif %}
                         </div>
+                        {% endif %}
                         {% endfor %}
                     </div>
                 </div>
