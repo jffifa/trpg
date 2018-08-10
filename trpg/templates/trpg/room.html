@@ -9,129 +9,128 @@
 {% block main %}
 <div class="container-fluid">
     <div class="row">
-        <div class="col-lg-5 py-md-3">
+        <div class="py-md-3 room-block room-side-panel" id="room-side-panel">
+            <div class="nav flex-column nav-pills mb-3" id="characters-tab" role="tablist" aria-orientation="vertical">
+                {% for character in characters %}
+                {% if is_admin or character.control_by_user is True %}
+                <a class="nav-link{% if controlable_char_ids|first == character.id %} active{% endif %}"
+                   id="character-tab-{{ character.id }}"
+                   data-character-id="{{ character.id }}" data-character-name="{{ character.name }}"
+                   data-toggle="pill" href="#character-{{ character.id }}"
+                   role="tab" aria-controls="character-{{ character.id }}"
+                   aria-selected="{% if controlable_char_ids|first == character.id %}true{% else %}false{% endif %}">{{ character.name }}</a>
+                {% endif %}
+                {% endfor %}
+            </div>
+            <div class="row mb-2">
+                <div class="col">
+                    {% if not controlable_char_ids %}
+                    <p>你尚未创建角色</p>
+                    {% endif %}
+                    <a class="btn btn-outline-success side-button" href="{% url 'character_import' room.name %}">点此创建角色</a>
+                </div>
+            </div>
+            <div class="row mb-3">
+                <div class="col">
+                    <a class="btn btn-outline-info side-button" href="#">导出记录(TODO)</a>
+                </div>
+            </div>
+            {% if is_admin %}
             <div class="row">
-                <div class="col-3">
-                    <div class="nav flex-column nav-pills mb-3" id="characters-tab" role="tablist" aria-orientation="vertical">
-                        {% for character in characters %}
-                        {% if is_admin or character.control_by_user is True %}
-                        <a class="nav-link{% if controlable_char_ids|first == character.id %} active{% endif %}"
-                           id="character-tab-{{ character.id }}"
-                           data-character-id="{{ character.id }}" data-character-name="{{ character.name }}"
-                           data-toggle="pill" href="#character-{{ character.id }}"
-                           role="tab" aria-controls="character-{{ character.id }}"
-                           aria-selected="{% if controlable_char_ids|first == character.id %}true{% else %}false{% endif %}">{{ character.name }}</a>
-                        {% endif %}
-                        {% endfor %}
+                <div class="col">
+                    <div class="onoffswitch side-button">
+                        <input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox" id="silent-mode-switch"{% if room_mode.silent is True %} checked{% endif %}>
+                        <label class="onoffswitch-label" for="silent-mode-switch">
+                            <span class="onoffswitch-inner"></span>
+                            <span class="onoffswitch-switch"></span>
+                        </label>
                     </div>
-                    <div class="row mb-2">
-                        <div class="col">
-                            {% if not controlable_char_ids %}
-                            <p>你尚未创建角色</p>
-                            {% endif %}
-                            <a class="btn btn-outline-success side-button" href="{% url 'character_import' room.name %}">点此创建角色</a>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+        <div class="py-md-3 room-block room-character-panel" id="room-character-panel">
+            <button class="btn btn-info float-right character-collapse"><i class="fas fa-angle-double-left"></i></button>
+            <button class="btn btn-info float-right character-expand"><i class="fas fa-angle-double-right"></i></button>
+            <div class="tab-content" id="characters-tabContent">
+                {% for character in characters %}
+                {% if is_admin or character.control_by_user is True %}
+                <div class="tab-pane fade{% if controlable_char_ids|first == character.id %} show active{% endif %}" id="character-{{ character.id }}" role="tabpanel" aria-labelledby="character-tab-{{ character.id }}">
+                    {% if character.char_type == "admin" %}
+                    <p>尊敬的 {{ character.name }} 阁下</p>
+                    {% else %}
+                    <!--basic info-->
+                    <h5 class="text-info">基本信息</h5>
+                    <div class="row mb-3">
+                        <div class="col-3">
+                            Avatar
                         </div>
+                        <div class="col-9"><div class="row">
+                            {% with info=character.details.basic_info %}
+                            {% for info_key, info_val in info.items %}
+                            <div class="col-6 mb-1 char-prop">
+                                <small><span class="font-weight-bold mr-sm-2 char-prop-key">{{ info_key }}</span>
+                                    <span class="char-prop-val">{{ info_val.value }}</span></small>
+                                {% if info_val.editable %}
+                                <input type="text" class="form-control form-control-sm float-right char-prop-mark" />
+                                {% endif %}
+                            </div>
+                            {% endfor %}
+                            {% endwith %}
+                        </div></div>
                     </div>
+                    <!--numeric info-->
+                    <h5 class="text-info">数值信息</h5>
+                    <div class="row mb-3 sortable">
+                        {% with info=character.details.num_info %}
+                        {% for info_key, info_val in info.items %}
+                        <div class="col-4 mb-1 char-prop">
+                            <small><span class="font-weight-bold mr-sm-2 char-prop-key">{{ info_key }}</span>
+                                <span class="char-prop-val">{{ info_val.value }}</span></small>
+                            {% if info_val.editable %}
+                            <input type="text" class="form-control form-control-sm float-right char-prop-mark" />
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                        {% endwith %}
+                    </div>
+                    <!--skills info-->
+                    <h5 class="text-info">技能</h5>
+                    <div class="row mb-3 sortable">
+                        {% with info=character.details.skills %}
+                        {% for info_key, info_val in info.items %}
+                        <div class="col-4 mb-1 char-prop">
+                            <small><span class="font-weight-bold mr-sm-2 char-prop-key">{{ info_key }}</span>
+                                <span class="char-prop-val">{{ info_val.value }}</span></small>
+                            {% if info_val.editable %}
+                            <input type="text" class="form-control form-control-sm float-right char-prop-mark" />
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                        {% endwith %}
+                    </div>
+                    <!--background-->
+                    <h5 class="text-info">人物背景</h5>
                     <div class="row mb-3">
                         <div class="col">
-                            <a class="btn btn-outline-info side-button" href="#">导出记录(TODO)</a>
+                            <small>{{ character.details.background|linebreaks }}</small>
                         </div>
                     </div>
-                    {% if is_admin %}
-                    <div class="row">
+                    <!--luggage-->
+                    <h5 class="text-info">携带物品</h5>
+                    <div class="row mb-3">
                         <div class="col">
-                            <div class="onoffswitch side-button">
-                                <input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox" id="silent-mode-switch"{% if room_mode.silent is True %} checked{% endif %}>
-                                <label class="onoffswitch-label" for="silent-mode-switch">
-                                    <span class="onoffswitch-inner"></span>
-                                    <span class="onoffswitch-switch"></span>
-                                </label>
-                            </div>
+                            <small>{{ character.details.luggage|linebreaks }}</small>
                         </div>
                     </div>
                     {% endif %}
                 </div>
-                <div class="col-9">
-                    <div class="tab-content" id="characters-tabContent">
-                        {% for character in characters %}
-                        {% if is_admin or character.control_by_user is True %}
-                        <div class="tab-pane fade{% if controlable_char_ids|first == character.id %} show active{% endif %}" id="character-{{ character.id }}" role="tabpanel" aria-labelledby="character-tab-{{ character.id }}">
-                            {% if character.char_type != "admin" %}
-                            <!--basic info-->
-                            <h5 class="text-info">基本信息</h5>
-                            <div class="row mb-3">
-                                <div class="col-3">
-                                    Avatar
-                                </div>
-                                <div class="col-9"><div class="row">
-                                    {% with info=character.details.basic_info %}
-                                    {% for info_key, info_val in info.items %}
-                                    <div class="col-6 mb-1 char-prop">
-                                        <small><span class="font-weight-bold mr-sm-2 char-prop-key">{{ info_key }}</span>
-                                            <span class="char-prop-val">{{ info_val.value }}</span></small>
-                                        {% if info_val.editable %}
-                                        <input type="text" class="form-control form-control-sm float-right char-prop-mark" />
-                                        {% endif %}
-                                    </div>
-                                    {% endfor %}
-                                    {% endwith %}
-                                </div></div>
-                            </div>
-                            <!--numeric info-->
-                            <h5 class="text-info">数值信息</h5>
-                            <div class="row mb-3 sortable">
-                                {% with info=character.details.num_info %}
-                                {% for info_key, info_val in info.items %}
-                                <div class="col-4 mb-1 char-prop">
-                                    <small><span class="font-weight-bold mr-sm-2 char-prop-key">{{ info_key }}</span>
-                                        <span class="char-prop-val">{{ info_val.value }}</span></small>
-                                    {% if info_val.editable %}
-                                    <input type="text" class="form-control form-control-sm float-right char-prop-mark" />
-                                    {% endif %}
-                                </div>
-                                {% endfor %}
-                                {% endwith %}
-                            </div>
-                            <!--skills info-->
-                            <h5 class="text-info">技能</h5>
-                            <div class="row mb-3 sortable">
-                                {% with info=character.details.skills %}
-                                {% for info_key, info_val in info.items %}
-                                <div class="col-4 mb-1 char-prop">
-                                    <small><span class="font-weight-bold mr-sm-2 char-prop-key">{{ info_key }}</span>
-                                        <span class="char-prop-val">{{ info_val.value }}</span></small>
-                                    {% if info_val.editable %}
-                                    <input type="text" class="form-control form-control-sm float-right char-prop-mark" />
-                                    {% endif %}
-                                </div>
-                                {% endfor %}
-                                {% endwith %}
-                            </div>
-                            <!--background-->
-                            <h5 class="text-info">人物背景</h5>
-                            <div class="row mb-3">
-                                <div class="col">
-                                    <small>{{ character.details.background|linebreaks }}</small>
-                                </div>
-                            </div>
-                            <!--luggage-->
-                            <h5 class="text-info">携带物品</h5>
-                            <div class="row mb-3">
-                                <div class="col">
-                                    <small>{{ character.details.luggage|linebreaks }}</small>
-                                </div>
-                            </div>
-                            {% endif %}
-                        </div>
-                        {% endif %}
-                        {% endfor %}
-                    </div>
-                </div>
+                {% endif %}
+                {% endfor %}
             </div>
         </div>
-        <div class="border-left col-lg-7 py-md-3">
+        <div class="border-left py-md-3 room-block room-msg-panel">
             <div class="msg-wrap" id="msg-wrap"></div>
-
             {% if characters %}
             <form class="send-wrap" id="msg-form" action="{% url 'send_msg' room.name %}">
                 <div class="row">

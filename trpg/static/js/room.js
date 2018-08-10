@@ -68,6 +68,19 @@ document.addEventListener("DOMContentLoaded", function(event) {
                 checkbox.prop('checked', !checked);
             });
         });
+        $('#room-character-panel>button.character-expand').hide();
+        $('#room-character-panel>button.character-collapse').click(function(e) {
+            $('#characters-tabContent').hide();
+            $(this).hide();
+            $('#room-character-panel>button.character-expand').show();
+            $('#room-character-panel').addClass('character-collapse');
+        });
+        $('#room-character-panel>button.character-expand').click(function(e) {
+            $('#room-character-panel').removeClass('character-collapse');
+            $(this).hide();
+            $('#characters-tabContent').show();
+            $('#room-character-panel>button.character-collapse').show();
+        });
     }
 
     // records staff

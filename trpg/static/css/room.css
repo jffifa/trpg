@@ -1,7 +1,27 @@
+.room-block {
+    position: relative;
+    width: 100%;
+    min-height: 1px;
+    padding-left: 15px;
+    padding-right: 15px;
+}
+.room-side-panel {
+    flex: 0 0 12%;
+    max-width: 12%;
+}
+.room-character-panel {
+    flex: 0 0 32%;
+    max-width: 32%;
+    transition: flex 0.3s ease-out;
+}
+.room-character-panel.character-collapse {
+    flex: 0 1 0;
+}
+.room-msg-panel {
+    flex: 1 0 56%;
+}
 .char-prop {
     cursor: default;
-}
-.sortable-placeholder {
 }
 input.char-prop-mark {
     padding: 0;
