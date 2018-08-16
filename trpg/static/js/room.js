@@ -68,7 +68,6 @@ document.addEventListener("DOMContentLoaded", function(event) {
                 checkbox.prop('checked', !checked);
             });
         });
-        $('#room-character-panel>button.character-expand').hide();
         $('#room-character-panel>button.character-collapse').click(function(e) {
             $('#characters-tabContent').hide();
             $(this).hide();
@@ -485,6 +484,43 @@ document.addEventListener("DOMContentLoaded", function(event) {
         $('#roll-form-roll-hidden').click(function (e) {
             let form = $('#roll-form');
             submitRollForm(form, true);
+        });
+        
+        let addRollShortcut = function (rollHidden=false) {
+            let shortcut = $('#roll-shortcut');
+            let rollCmd = $('#roll-cmd').val();
+            let rollAgainst = $('#roll-against').val();
+            rollAgainst = rollAgainst.replace(/\{c:[^}]+\}/, '');
+            rollAgainst = rollAgainst.replace(/\{v:[^}]+\}/, '');
+            if (rollAgainst) {
+                shortcut.collapse('show');
+                let button = $('<button>').data('rollCmd', rollCmd).data('rollAgainst', rollAgainst);
+                if (rollHidden) {
+                    button.data('rollHidden', 1);
+                }
+                button.text(rollAgainst);
+                button.data('toggle', 'tooltip').data('placement', 'bottom').prop('title', rollCmd).tooltip();
+                if (rollHidden) {
+                    button.addClass('btn btn-secondary');
+                } else {
+                    button.addClass('btn btn-primary');
+                }
+                let buttonCancel = $('<button>').addClass('btn btn-danger').html('<i class="fas fa-times"></i>');
+                buttonCancel.click(function (e) {
+                    $(this).parent().remove();
+                });
+                let buttonGrp = $('<div>').addClass('btn-group mr-sm-2').prop('role', 'group');
+                buttonGrp.append(button).append(buttonCancel);
+                shortcut.prepend(buttonGrp);
+            }
+            
+        };
+
+        $('button#add-to-roll-shortcut').click(function(e) {
+            addRollShortcut();
+        });
+        $('button#add-to-hidden-roll-shortcut').click(function(e) {
+            addRollShortcut(true);
         })
     }
     

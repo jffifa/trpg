@@ -51,7 +51,7 @@
         </div>
         <div class="py-md-3 room-block room-character-panel" id="room-character-panel">
             <button class="btn btn-info float-right character-collapse"><i class="fas fa-angle-double-left"></i></button>
-            <button class="btn btn-info float-right character-expand"><i class="fas fa-angle-double-right"></i></button>
+            <button class="btn btn-info float-right character-expand" style="display:none"><i class="fas fa-angle-double-right"></i></button>
             <div class="tab-content" id="characters-tabContent">
                 {% for character in characters %}
                 {% if is_admin or character.control_by_user is True %}
@@ -192,23 +192,19 @@
                     <input type="submit" class="btn btn-primary mr-sm-2" value="掷骰"
                            {% if room_mode.silent is True and not is_admin %}disabled{% endif %}>
                     {% if is_admin %}
-                    <button type="button" class="btn btn-dark mr-sm-2" id="roll-form-roll-hidden">暗投</button>
+                    <button type="button" class="btn btn-secondary mr-sm-2" id="roll-form-roll-hidden">暗投</button>
                     <!--<button type="button" class="btn btn-secondary mr-sm-2" id="roll-form-roll-req">要求掷骰(TODO)</button>-->
                     {% endif %}
-                    或快捷掷骰(TODO)：
+                    <div class="btn-group" role="group">
+                        <button id="add-to-roll-shortcut" type="button" class="btn btn-info" data-toggle="tooltip" data-placement="bottom"
+                                title="将当前掷骰指令加入快捷列表（最多7个）">快捷掷骰</button>
+                        <button id="add-to-hidden-roll-shortcut" type="button" class="btn btn-dark" data-toggle="tooltip" data-placement="bottom"
+                                title="将当前暗投指令加入快捷列表（最多7个）">快捷暗投</button>
+                        <button type="button" class="btn btn-info dropdown-toggle"
+                                data-toggle="collapse" data-target="#roll-shortcut" aria-expanded="false" aria-controls="roll-shortcut"></button>
+                    </div>
                 </form>
-                <a class="btn btn-outline-secondary" data-toggle="tooltip" data-placement="bottom"
-                   title="对当前选择角色进行1d100侦查检定">侦查</a>
-                <a class="btn btn-outline-secondary" data-toggle="tooltip" data-placement="bottom"
-                   title="对当前选择角色进行1d100急救检定">急救</a>
-                <a class="btn btn-outline-secondary" data-toggle="tooltip" data-placement="bottom"
-                   title="对当前选择角色进行1d100灵感检定">灵感</a>
-                <a class="btn btn-outline-secondary" data-toggle="tooltip" data-placement="bottom"
-                   title="对当前选择角色进行1d100理智检定">SanCheck</a>
-                {% if is_admin %}
-                <a class="btn btn-outline-secondary" data-toggle="tooltip" data-placement="bottom"
-                   title="对当前选择角色进行1d100心理学检定(由KP进行暗投)">心理学</a>
-                {% endif %}
+                <div class="collapse" id="roll-shortcut"></div>
             </div>
             <div class="modify-panel">
                 数值修改区(TODO)
