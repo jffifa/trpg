@@ -196,10 +196,10 @@
                     <!--<button type="button" class="btn btn-secondary mr-sm-2" id="roll-form-roll-req">要求掷骰(TODO)</button>-->
                     {% endif %}
                     <div class="btn-group" role="group">
-                        <button id="add-to-roll-shortcut" type="button" class="btn btn-info" data-toggle="tooltip" data-placement="bottom"
-                                title="将当前掷骰指令加入快捷列表（最多7个）">快捷掷骰</button>
-                        <button id="add-to-hidden-roll-shortcut" type="button" class="btn btn-dark" data-toggle="tooltip" data-placement="bottom"
-                                title="将当前暗投指令加入快捷列表（最多7个）">快捷暗投</button>
+                        <button id="add-to-roll-shortcut" type="button" class="btn btn-info">加入快捷掷骰</button>
+                        {% if is_admin %}
+                        <button id="add-to-hidden-roll-shortcut" type="button" class="btn btn-dark">加入快捷暗投</button>
+                        {% endif %}
                         <button type="button" class="btn btn-info dropdown-toggle"
                                 data-toggle="collapse" data-target="#roll-shortcut" aria-expanded="false" aria-controls="roll-shortcut"></button>
                     </div>
